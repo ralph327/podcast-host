@@ -19,7 +19,7 @@ import (
 func (s *System) DBConnect() {
 	s.DB = arangolite.New().
 		LoggerOptions(false, false, false).
-		Connect("http://"+s.Conf.GetString("URL"), "podcast-host", "devpod", "**DB!!podhost")
+		Connect("http://"+s.Conf.GetString("DBURL"), s.Conf.GetString(s.Env+"DBName"), s.Conf.GetString(s.Env+"DBUser"), s.Conf.GetString(s.Env+"DBPass"))
 }
 
 /*************************

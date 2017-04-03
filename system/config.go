@@ -2,53 +2,75 @@
 package system
 
 import (
-	_ "github.com/spf13/viper"
+	"fmt"
+	"github.com/spf13/viper"
 )
 
-func LoadConfig() (*Viper, error) {
-	v := New()
+func (s *System) LoadConfig() error {
+	s.Conf = viper.New()
 
-	err := v.init()
+	err := s.ConfigInit()
 
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
 
-	err = viper.ReadInConfig() // Find and read the config file
+	err = s.Conf.ReadInConfig() // Find and read the config file
 
 	if err != nil {
 		panic(fmt.Errorf("Fatal error: config file not found: %s \n", err))
 	}
 
-	if GetBool("WatchConf") {
-		v.WatchConfig()
+	if viper.GetBool("WatchConf") {
+		s.Conf.WatchConfig()
 	}
 
-}
+	env := viper.GetString("Environment")
 
-func (v *Viper) init() error {
-	// config file name
-	viper.SetConfigName("podcasthost_conf")
+	switch env {
+	case "development", "dev", "test", "testing", "local", "DEV", "DEVELOPMENT", "TEST", "LOCAL":
+		s.Env = "development"
+	case "staging", "model", "acceptance", "uat", "remote", "STAGING", "MODEL", "ACCEPTANCE", "UAT", "REMOTE":
+		s.Env = "staging"
+	case "prod", "production", "live", "PROD", "PRODUCTION", "LIVE":
+		s.Env = "production"
+	}
 
-	// config path
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("$HOME/.podcasthost")
-	viper.AddConfigPath("/etc/podcasthost")
+	webport := s.Conf.GetString(s.Env + "WebPort")
+	weburl := s.Conf.GetString(s.Env+"Hostname") + webport
 
-	// config environment variables
-	SetEnvPrefix("PH")
-	BindEnv("Environment", "PH_Environment")
+	dbport := s.Conf.GetString(s.Env + "DBPort")
+	dburl := s.Conf.GetString(s.Env+"Hostname") + dbport
 
-	// config defaults
-	viper.SetDefault("Environment", "development")
-	v.SetDefaults()
+	s.Conf.Set("URL", weburl)
+	s.Conf.Set("DBURL", dburl)
 
 	return nil
 }
 
-func (v *Viper) SetDefaults() {
-	viper.SetDefault("WatchConf", "true")
-	viper.SetDefault("WebPort", "8080")
-	viper.SetDefault("DBPort", "8529")
-	viper.SetDefault("Hostname", "localhost")
+func (s *System) ConfigInit() error {
+	// config file name
+	s.Conf.SetConfigName("podcasthost_conf")
+
+	// config path
+	s.Conf.AddConfigPath("./config")
+	s.Conf.AddConfigPath("$HOME/.podcasthost")
+	s.Conf.AddConfigPath("/etc/podcasthost")
+
+	// config environment variables
+	viper.SetEnvPrefix("PH")
+	viper.BindEnv("Environment", "PH_Environment")
+
+	// config defaults
+	s.Conf.SetDefault("Environment", "development")
+	s.SetConfigDefaults()
+
+	return nil
+}
+
+func (s *System) SetConfigDefaults() {
+	s.Conf.SetDefault("WatchConf", "true")
+	s.Conf.SetDefault("development.WebPort", "8080")
+	s.Conf.SetDefault("development.DBPort", "8529")
+	s.Conf.SetDefault("development.Hostname", "localhost")
 }

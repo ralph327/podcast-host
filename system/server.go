@@ -3,14 +3,16 @@ package system
 
 import (
 	"github.com/fvbock/endless"
+	"github.com/solher/arangolite"
 	"github.com/spf13/viper"
-	_ "gopkg.in/gin-gonic/gin.v1"
+	"gopkg.in/gin-gonic/gin.v1"
 )
 
 type System struct {
-	Server *Engine
+	Server *gin.Engine
 	DB     *arangolite.DB
 	Conf   *viper.Viper
+	Env    string
 }
 
 func NewSystem() (*System, error) {
@@ -25,20 +27,18 @@ func NewSystem() (*System, error) {
 	return s, nil
 }
 
-func (s *System) Start() error {
-	env := s.Conf.GetString("Environment")
-	port := s.Conf.GetString("WebPort")
-	url := s.Conf.GetString("Hostname") + port
-
-	s.Conf.Set("URL", url)
-
-	endless.ListenAndServe(":"+port, s.Server)
+func (s *System) Start() {
+	endless.ListenAndServe(":"+s.Conf.GetString(s.Env+"WebPort"), s.Server)
 }
 
 func (s *System) init() error {
 	var err error
+
+	// HTTP Server
 	s.Server = gin.Default()
-	s.Conf, err = LoadConfig()
+
+	// Config
+	err = s.LoadConfig()
 
 	if err != nil {
 		return err
