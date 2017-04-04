@@ -1,1 +1,4 @@
 cmd/podcast-host-server/config/podcasthost_conf.toml
+tmp
+system/tmp
+cmd/podcast-host-server/tmp/

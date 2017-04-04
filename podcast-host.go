@@ -57,6 +57,17 @@ type UserHasRoleService interface {
 	RemoveUserRole(key string) error
 }
 
+type UserHasPodcast struct {
+	arangolite.Document
+}
+
+type UserHasPodcastService interface {
+	UserHasPodcast(key string) (*UserHasPodcast, error)
+	UserHasPodcasts(user_key string) ([]*UserHasPodcast, error)
+	GiveUserPodcast(u *UserHasPodcast) error
+	RemoveUserPodcast(key string) error
+}
+
 /*************************
 *******           ********
 *******  PODCAST  ********

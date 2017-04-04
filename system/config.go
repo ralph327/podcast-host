@@ -2,8 +2,8 @@
 package system
 
 import (
-	"fmt"
 	"github.com/spf13/viper"
+	"log"
 )
 
 func (s *System) LoadConfig() error {
@@ -12,35 +12,45 @@ func (s *System) LoadConfig() error {
 	err := s.ConfigInit()
 
 	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		return err
 	}
 
 	err = s.Conf.ReadInConfig() // Find and read the config file
 
 	if err != nil {
-		panic(fmt.Errorf("Fatal error: config file not found: %s \n", err))
+		return err
 	}
 
-	if viper.GetBool("WatchConf") {
+	if s.Conf.GetBool("WatchConf") {
 		s.Conf.WatchConfig()
 	}
 
-	env := viper.GetString("Environment")
+	watch := s.Conf.GetBool("WatchConf")
+	var ws string
+	if watch {
+		ws = "TRUE"
+	} else {
+		ws = "FALSE"
+	}
+	log.Println("WatchConf: " + ws)
+
+	env := s.Conf.GetString("Environment")
+	log.Println("Env: " + env)
 
 	switch env {
 	case "development", "dev", "test", "testing", "local", "DEV", "DEVELOPMENT", "TEST", "LOCAL":
-		s.Env = "development"
+		s.Env = "development."
 	case "staging", "model", "acceptance", "uat", "remote", "STAGING", "MODEL", "ACCEPTANCE", "UAT", "REMOTE":
-		s.Env = "staging"
+		s.Env = "staging."
 	case "prod", "production", "live", "PROD", "PRODUCTION", "LIVE":
-		s.Env = "production"
+		s.Env = "production."
 	}
 
 	webport := s.Conf.GetString(s.Env + "WebPort")
-	weburl := s.Conf.GetString(s.Env+"Hostname") + webport
+	weburl := s.Conf.GetString(s.Env+"Hostname") + ":" + webport
 
 	dbport := s.Conf.GetString(s.Env + "DBPort")
-	dburl := s.Conf.GetString(s.Env+"Hostname") + dbport
+	dburl := s.Conf.GetString(s.Env+"Hostname") + ":" + dbport
 
 	s.Conf.Set("URL", weburl)
 	s.Conf.Set("DBURL", dburl)
@@ -69,7 +79,7 @@ func (s *System) ConfigInit() error {
 }
 
 func (s *System) SetConfigDefaults() {
-	s.Conf.SetDefault("WatchConf", "true")
+	s.Conf.SetDefault("WatchConf", true)
 	s.Conf.SetDefault("development.WebPort", "8080")
 	s.Conf.SetDefault("development.DBPort", "8529")
 	s.Conf.SetDefault("development.Hostname", "localhost")

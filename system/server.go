@@ -2,15 +2,19 @@
 package system
 
 import (
+	"codenex.us/ralph/podcast-host/system/db"
 	"github.com/fvbock/endless"
-	"github.com/solher/arangolite"
+	"github.com/olahol/melody"
 	"github.com/spf13/viper"
 	"gopkg.in/gin-gonic/gin.v1"
+	"log"
+	"os"
 )
 
 type System struct {
 	Server *gin.Engine
-	DB     *arangolite.DB
+	WS     *melody.Melody
+	DB     *db.ArangoDB
 	Conf   *viper.Viper
 	Env    string
 }
@@ -28,7 +32,12 @@ func NewSystem() (*System, error) {
 }
 
 func (s *System) Start() {
-	endless.ListenAndServe(":"+s.Conf.GetString(s.Env+"WebPort"), s.Server)
+	err := endless.ListenAndServe(":"+s.Conf.GetString(s.Env+"WebPort"), s.Server)
+
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
 }
 
 func (s *System) init() error {
@@ -37,12 +46,33 @@ func (s *System) init() error {
 	// HTTP Server
 	s.Server = gin.Default()
 
+	// Websocket
+	s.WS = melody.New()
+
 	// Config
 	err = s.LoadConfig()
 
 	if err != nil {
 		return err
 	}
+
+	// Database
+	s.DB = new(db.ArangoDB)
+
+	err = s.DB.InitConnect(s.Conf.GetString("DBURL"), s.Conf.GetString(s.Env+"DBName"), s.Conf.GetString(s.Env+"DBUser"), s.Conf.GetString(s.Env+"DBPass"))
+
+	if err != nil {
+		return err
+	}
+
+	err = s.DB.ModelCheck()
+
+	if err != nil {
+		return err
+	}
+
+	// Routes
+	s.AddRoutes()
 
 	return nil
 }
