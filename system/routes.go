@@ -15,6 +15,7 @@ type SystemRouterService interface {
 	AddRoutes()
 }
 
+// Simplify adding routes
 func (s *System) AddRoute(method string, route string, handler gin.HandlerFunc) error {
 	switch method {
 	case "POST", "post":
@@ -38,6 +39,7 @@ func (s *System) AddRoute(method string, route string, handler gin.HandlerFunc) 
 	return nil
 }
 
+// Register routes with system
 func (s *System) AddRoutes() {
 	s.AddRoute("GET", "/", Home())
 	s.AddRoute("GET", "/ping", Ping())

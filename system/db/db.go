@@ -1,5 +1,3 @@
-// ArangoDB implementation of db
-
 // Domain for the database package
 
 package db

@@ -1,4 +1,5 @@
 // Accesses configuration files
+
 package system
 
 import (
@@ -6,9 +7,11 @@ import (
 	"log"
 )
 
+// Creates a new config and loads it
 func (s *System) LoadConfig() error {
 	s.Conf = viper.New()
 
+	// Initialize and set defaults
 	err := s.ConfigInit()
 
 	if err != nil {
@@ -37,6 +40,7 @@ func (s *System) LoadConfig() error {
 	env := s.Conf.GetString("Environment")
 	log.Println("Env: " + env)
 
+	// Set environment of system based on config
 	switch env {
 	case "development", "dev", "test", "testing", "local", "DEV", "DEVELOPMENT", "TEST", "LOCAL":
 		s.Env = "development."
@@ -46,6 +50,7 @@ func (s *System) LoadConfig() error {
 		s.Env = "production."
 	}
 
+	// Setup the URLs used in the system
 	webport := s.Conf.GetString(s.Env + "WebPort")
 	weburl := s.Conf.GetString(s.Env+"Hostname") + ":" + webport
 
@@ -58,6 +63,7 @@ func (s *System) LoadConfig() error {
 	return nil
 }
 
+// Initialize the config
 func (s *System) ConfigInit() error {
 	// config file name
 	s.Conf.SetConfigName("podcasthost_conf")
@@ -78,6 +84,7 @@ func (s *System) ConfigInit() error {
 	return nil
 }
 
+// Set defaults for the config
 func (s *System) SetConfigDefaults() {
 	s.Conf.SetDefault("WatchConf", true)
 	s.Conf.SetDefault("development.WebPort", "8080")

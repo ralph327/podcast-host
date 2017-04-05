@@ -9,6 +9,7 @@ import (
 	"github.com/solher/arangolite"
 )
 
+// A map of podcast-host Structs and their corresponding collection(table) name
 var Clxns = map[interface{}]string{
 	podhost.User{}:               "users",
 	podhost.UserRole{}:           "user_roles",
@@ -23,11 +24,13 @@ var Clxns = map[interface{}]string{
 	podhost.UserHasPodcast{}:     "user_has_podcast",
 }
 
+// Extends db.Database with arangolite connection
 type ArangoDB struct {
 	Database
 	DB *arangolite.DB
 }
 
+// Establishes a connection and saves DB info
 func (d *ArangoDB) InitConnect(url string, name string, user string, pass string) error {
 	// Connect
 	db := arangolite.New().
@@ -55,6 +58,7 @@ func (d *ArangoDB) InitConnect(url string, name string, user string, pass string
 	return nil
 }
 
+// Connects to the database
 func (d *ArangoDB) Connect() (*arangolite.DB, error) {
 	// Connect
 	d.DB = arangolite.New().
@@ -76,6 +80,7 @@ func (d *ArangoDB) Connect() (*arangolite.DB, error) {
 	return d.DB, nil
 }
 
+// Check that the model exists in the database
 func (d *ArangoDB) ModelCheck() error {
 	var err error
 	var r []byte

@@ -1,3 +1,5 @@
+// Implements the server app that will run podcast-host
+
 package main
 
 import (
@@ -8,12 +10,12 @@ import (
 )
 
 func main() {
-	sys, err := system.NewSystem()
+	sys, err := system.NewSystem() // Create the system
 
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
-	sys.Start()
+	sys.Start() // Start the system
 }
