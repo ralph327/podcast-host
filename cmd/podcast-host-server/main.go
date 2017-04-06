@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	sys, err := system.NewSystem() // Create the system
+	sys, err := system.New() // Create the system
 
 	if err != nil {
 		log.Fatal(err)

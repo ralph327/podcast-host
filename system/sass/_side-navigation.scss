@@ -1,0 +1,6 @@
+nav#side-navigation {
+	@include grid-column(3, $home-grid);
+	@include padding(1em);
+	background: #93535F;
+	float:right;
+}

@@ -1,13 +1,7 @@
 {{define "header"}}
-<header class="animated">
+<header>
 	<div class="wrapper">
-		<h1><a href="http://{{.baseURL}}">{{.sdDisplay}} {{ .siteName }}</a></h1><br/>
-		<!--
-		<h1 class="lato"><a href="http://{{.baseURL}}">{{.sdDisplay}} {{ .siteName }}</a></h1><br/>
-		<h1 class="alegreya"><a href="http://{{.baseURL}}">{{.sdDisplay}} {{ .siteName }}</a></h1><br/>
-		<h1 class="robotc"><a href="http://{{.baseURL}}">{{.sdDisplay}} {{ .siteName }}</a></h1><br/>
-		<h1 class="robots"><a href="http://{{.baseURL}}">{{.sdDisplay}} {{ .siteName }}</a></h1>
-		-->
+		<h1><a href="http://{{.SiteDetails.BaseURL}}">{{.SiteDetails.Title}}</a></h1>
 	</div>
 </header>
 {{end}}

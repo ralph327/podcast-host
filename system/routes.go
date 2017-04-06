@@ -41,7 +41,7 @@ func (s *System) AddRoute(method string, route string, handler gin.HandlerFunc) 
 
 // Register routes with system
 func (s *System) AddRoutes() {
-	s.AddRoute("GET", "/", Home())
+	s.AddRoute("GET", "/", s.Home())
 	s.AddRoute("GET", "/ping", Ping())
 	s.AddRoute("GET", "/user/get/:id", s.GetUser())
 	s.AddRoute("GET", "/user/create", s.CreateUser())
@@ -53,9 +53,9 @@ func (s *System) AddRoutes() {
 ********          ********
 *************************/
 
-func Home() gin.HandlerFunc {
+func (s *System) Home() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.String(http.StatusOK, "Hello World!")
+		c.HTML(http.StatusOK, "base", s.PL.Data)
 	}
 }
 
@@ -68,9 +68,9 @@ func (s *System) GetUser() gin.HandlerFunc {
 		}
 
 		if u == nil {
-			c.String(http.StatusNotFound, "That user does not exist")
+			c.HTML(http.StatusNotFound, "base", s.PL.Data)
 		} else {
-			c.String(http.StatusOK, "That user does exist")
+			c.HTML(http.StatusOK, "base", s.PL.Data)
 		}
 
 	}

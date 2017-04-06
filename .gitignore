@@ -2,3 +2,6 @@ cmd/podcast-host-server/config/podcasthost_conf.toml
 tmp
 system/tmp
 cmd/podcast-host-server/tmp/
+system/.sass-cache/
+system/public/css/podcast-host.css
+system/public/css/podcast-host.css.map

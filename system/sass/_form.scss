@@ -1,0 +1,22 @@
+fieldset {
+	form {
+		p {
+			label {
+				
+			}
+			input {
+			
+			}
+			&.checkbox {
+				@include clearfix;
+				label {
+					float:left;
+				}
+				input {
+					float:left;
+					margin-top:5px;
+				}
+			}
+		}
+	}
+}

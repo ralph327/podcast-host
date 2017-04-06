@@ -1,0 +1,16 @@
+#main-navigation {
+	@include grid-container($home-grid);
+	background: #543E48;
+	color:$font-color-on-dark;
+
+	.main-nav-link {
+		@include grid-column(1, $home-grid);
+		@include padding(1em null);
+		
+		&.first {
+			@include padding(null null null 1em);
+		}
+	}
+	
+}
+

@@ -30,6 +30,13 @@ type ArangoDB struct {
 	DB *arangolite.DB
 }
 
+// Creates a new Arango DB
+func NewArangoDB() (*ArangoDB, error) {
+	d := new(ArangoDB)
+
+	return d, nil
+}
+
 // Establishes a connection and saves DB info
 func (d *ArangoDB) InitConnect(url string, name string, user string, pass string) error {
 	// Connect

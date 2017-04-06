@@ -43,21 +43,21 @@ func (s *System) LoadConfig() error {
 	// Set environment of system based on config
 	switch env {
 	case "development", "dev", "test", "testing", "local", "DEV", "DEVELOPMENT", "TEST", "LOCAL":
-		s.Env = "development."
+		s.Conf.Set("ENV", "development.")
 	case "staging", "model", "acceptance", "uat", "remote", "STAGING", "MODEL", "ACCEPTANCE", "UAT", "REMOTE":
-		s.Env = "staging."
+		s.Conf.Set("ENV", "staging.")
 	case "prod", "production", "live", "PROD", "PRODUCTION", "LIVE":
-		s.Env = "production."
+		s.Conf.Set("ENV", "production.")
 	}
 
 	// Setup the URLs used in the system
-	webport := s.Conf.GetString(s.Env + "WebPort")
-	weburl := s.Conf.GetString(s.Env+"Hostname") + ":" + webport
+	webport := s.Conf.GetString(s.Conf.GetString("Env") + "WebPort")
+	weburl := s.Conf.GetString(s.Conf.GetString("Env")+"Hostname") + ":" + webport
 
-	dbport := s.Conf.GetString(s.Env + "DBPort")
-	dburl := s.Conf.GetString(s.Env+"Hostname") + ":" + dbport
+	dbport := s.Conf.GetString(s.Conf.GetString("Env") + "DBPort")
+	dburl := s.Conf.GetString(s.Conf.GetString("Env")+"Hostname") + ":" + dbport
 
-	s.Conf.Set("URL", weburl)
+	s.Conf.Set("BaseURL", weburl)
 	s.Conf.Set("DBURL", dburl)
 
 	return nil
@@ -90,4 +90,5 @@ func (s *System) SetConfigDefaults() {
 	s.Conf.SetDefault("development.WebPort", "8080")
 	s.Conf.SetDefault("development.DBPort", "8529")
 	s.Conf.SetDefault("development.Hostname", "localhost")
+	s.Conf.SetDefault("development.SiteName", "Podcast Host")
 }
