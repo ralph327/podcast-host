@@ -91,4 +91,22 @@ func (s *System) SetConfigDefaults() {
 	s.Conf.SetDefault("development.DBPort", "8529")
 	s.Conf.SetDefault("development.Hostname", "localhost")
 	s.Conf.SetDefault("development.SiteName", "Podcast Host")
+
+	// Digital Ocean
+	s.Conf.SetDefault("development.DOToken", "token")
+
+	// Minio Live
+	s.Conf.SetDefault("development.MIO_LUrl", "http://127.0.0.1:9000")
+	s.Conf.SetDefault("development.MIO_LATkn", "accesskey")
+	s.Conf.SetDefault("development.MIO_LSTkn", "secretkey")
+
+	// Minio Archive
+	s.Conf.SetDefault("development.MIO_AUrl", "http://127.0.0.1:9000")
+	s.Conf.SetDefault("development.MIO_AATkn", "accesskey")
+	s.Conf.SetDefault("development.MIO_ASTkn", "secretkey")
+
+	// Minio Backup
+	s.Conf.SetDefault("development.MIO_BUrl", "http://127.0.0.1:9000")
+	s.Conf.SetDefault("development.MIO_BATkn", "accesskey")
+	s.Conf.SetDefault("development.MIO_BSTkn", "secretkey")
 }

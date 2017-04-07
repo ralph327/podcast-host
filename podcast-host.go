@@ -4,6 +4,7 @@ package podhost
 
 import (
 	"github.com/solher/arangolite"
+	"time"
 )
 
 /*************************
@@ -103,6 +104,7 @@ type Episode struct {
 	Length  int
 	Link    string
 	Number  string
+	Status  string // archive, live
 }
 
 type EpisodeService interface {
@@ -175,4 +177,32 @@ type PodcastHasCategory struct {
 
 type PodcastHasCategoryService interface {
 	PodcastHasCategory(key string) (*PodcastHasCategory, error)
+}
+
+// FILES
+
+type Bucket struct {
+	arangolite.Document
+	Name         string
+	CreationDate time.Time
+	Active       bool
+}
+
+type Object struct {
+	arangolite.Document
+	Name   string
+	Expiry time.Duration
+	Active bool
+}
+
+type PodcastHasBucket struct {
+	arangolite.Document
+	Type   string // archive, live, backup
+	Active bool
+}
+
+type EpisodeHasObject struct {
+	arangolite.Document
+	Type   string //archive, live, backup
+	Active bool
 }

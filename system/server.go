@@ -3,7 +3,11 @@ package system
 
 import (
 	"codenex.us/ralph/podcast-host/system/db"
+	"codenex.us/ralph/podcast-host/system/files"
+	"codenex.us/ralph/podcast-host/system/godo"
+	"codenex.us/ralph/podcast-host/system/minio"
 	"codenex.us/ralph/podcast-host/system/payload"
+	"codenex.us/ralph/podcast-host/system/view"
 	"github.com/fvbock/endless"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/olahol/melody"
@@ -22,6 +26,10 @@ type System struct {
 	Sanitizers map[string]*bluemonday.Policy
 	Conf       *viper.Viper
 	PL         *payload.Payload
+	Views      map[string]*view.View
+	DO         *godo.GoDO
+	Minios     map[string]*minio.Minio
+	TusC       *files.TusClient
 }
 
 // Creates the system
@@ -66,6 +74,42 @@ func (s *System) SanitizeInit() {
 	s.Sanitizers["strict"] = bluemonday.StrictPolicy()
 }
 
+// Setup minio servers
+func (s *System) MinioInit() error {
+	var err error
+	var mc *minio.Conf
+	s.Minios = make(map[string]*minio.Minio)
+
+	// The Live file server
+	mc, err = minio.NewConf(s.Conf.GetString(s.Conf.GetString("Env")+"MIO_LUrl"),
+		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_LATkn"),
+		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_LSTkn"))
+	if err != nil {
+		return err
+	}
+	s.Minios["live"], err = minio.New(mc)
+
+	// The Archive file server
+	mc, err = minio.NewConf(s.Conf.GetString(s.Conf.GetString("Env")+"MIO_AUrl"),
+		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_AATkn"),
+		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_ASTkn"))
+	if err != nil {
+		return err
+	}
+	s.Minios["archive"], err = minio.New(mc)
+
+	// The Backup file server
+	mc, err = minio.NewConf(s.Conf.GetString(s.Conf.GetString("Env")+"MIO_BUrl"),
+		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_BATkn"),
+		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_BSTkn"))
+	if err != nil {
+		return err
+	}
+	s.Minios["backup"], err = minio.New(mc)
+
+	return nil
+}
+
 // Initializes the system
 func (s *System) init() error {
 	var err error
@@ -73,6 +117,8 @@ func (s *System) init() error {
 	/* HTTP Server
 	 */
 	s.Server = gin.Default()
+	s.Server.Use(s.ViewChecker())
+	s.Server.Use(s.PayloadClearer())
 	// Set templates
 	html := template.Must(template.ParseGlob("tmpl/*"))
 	s.Server.SetHTMLTemplate(html)
@@ -124,9 +170,35 @@ func (s *System) init() error {
 		return err
 	}
 
+	/* Digital Ocean
+	 */
+	// Initialize the DO struct
+	s.DO, err = godo.New(s.Conf.GetString(s.Conf.GetString("Env") + "DOToken"))
+	if err != nil {
+		return err
+	}
+
+	/* Minio
+	 */
+	err = s.MinioInit()
+	if err != nil {
+		return err
+	}
+
+	/* TUS Client
+	 */
+	s.TusC, err = files.NewTusClient(s.Conf.GetString(s.Conf.GetString("Env")+"MIO_LUrl"), nil)
+	if err != nil {
+		return err
+	}
+
 	/* Routes
 	 */
 	s.AddRoutes()
+
+	/* View
+	 */
+	s.Views, _ = view.Views()
 
 	/* Static Files
 	 */

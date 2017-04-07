@@ -62,14 +62,16 @@ func (s *System) Home() gin.HandlerFunc {
 func (s *System) GetUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, err := s.DB.GetUser(c.Param("id"))
-
 		if err != nil {
 			log.Fatal(err)
 		}
 
+		s.PL.Data["View"] = s.Views["User"]
+
 		if u == nil {
 			c.HTML(http.StatusNotFound, "base", s.PL.Data)
 		} else {
+			s.PL.Data["User"] = u
 			c.HTML(http.StatusOK, "base", s.PL.Data)
 		}
 
@@ -88,5 +90,29 @@ func (s *System) CreateUser() gin.HandlerFunc {
 func Ping() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
+	}
+}
+
+/*****************************
+********              ********
+********  MIDDLEWARE  ********
+********              ********
+*****************************/
+func (s *System) PayloadClearer() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+		_ = s.PL.Clear()
+	}
+}
+
+func (s *System) ViewChecker() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		_, ok := s.PL.Data["View"]
+
+		if ok == false {
+			log.Println("No view found")
+			s.PL.Data["View"] = s.Views["Home"]
+		}
+		c.Next()
 	}
 }

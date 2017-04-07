@@ -22,6 +22,10 @@ var Clxns = map[interface{}]string{
 	podhost.PodcastCategory{}:    "podcast_category",
 	podhost.PodcastHasCategory{}: "podcast_has_category",
 	podhost.UserHasPodcast{}:     "user_has_podcast",
+	podhost.Bucket{}:             "buckets",
+	podhost.Object{}:             "objects",
+	podhost.PodcastHasBucket{}:   "podcast_has_buckets",
+	podhost.EpisodeHasObject{}:   "episode_has_object",
 }
 
 // Extends db.Database with arangolite connection

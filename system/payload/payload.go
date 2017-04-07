@@ -43,7 +43,12 @@ func (p *Payload) Init(conf *viper.Viper) error {
 // Delete all contents of the payload
 func (p *Payload) Clear() error {
 	for k := range p.Data {
-		delete(p.Data, k)
+		switch k {
+		case "SiteDetails":
+			continue
+		default:
+			delete(p.Data, k)
+		}
 	}
 
 	return nil

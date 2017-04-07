@@ -7,8 +7,12 @@
 <div class="flash-alert"></div>
 <section class="content">
 	<article class="type-system-geometric">
-	<h1 class="title">{{.MainHeader}}</h1>
-	{{.body}}
+	{{ if eq .View.Name "User" }}
+    	{{template "user" .}}
+	{{ else if eq .View.Name "Home" }}
+	    <h2>Welcome!</h2>
+	{{ end }}
+
 	</article>
 </section>
 {{template "side-navigation" .}}
