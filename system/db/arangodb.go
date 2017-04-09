@@ -200,3 +200,81 @@ func (d *ArangoDB) DeleteUser(key string) error {
 
 	return nil
 }
+
+/****************************
+********             ********
+********   PODCAST   ********
+********             ********
+****************************/
+func (d *ArangoDB) GetPodcast(key string) (*podhost.Podcast, error) {
+	q := arangolite.NewQuery(`
+		FOR pod IN %s
+			FILTER pod._key == "%s"
+			RETURN pod
+	  	`, Clxns[podhost.Podcast{}], key)
+
+	podcasts := []*podhost.Podcast{}
+
+	r, err := d.DB.Run(q)
+
+	if err != nil {
+		return nil, err
+	}
+
+	json.Unmarshal(r, &podcasts)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(podcasts) == 0 {
+		return nil, nil
+	}
+
+	if len(podcasts) > 1 {
+		return nil, errors.New("Too many matches")
+	}
+
+	pod := podcasts[0]
+
+	return pod, nil
+}
+
+/****************************
+********             ********
+********   EPISODE   ********
+********             ********
+****************************/
+func (d *ArangoDB) GetEpisode(key string) (*podhost.Episode, error) {
+	q := arangolite.NewQuery(`
+		FOR ep IN %s
+			FILTER ep._key == "%s"
+			RETURN ep
+	  	`, Clxns[podhost.Episode{}], key)
+
+	episodes := []*podhost.Episode{}
+
+	r, err := d.DB.Run(q)
+
+	if err != nil {
+		return nil, err
+	}
+
+	json.Unmarshal(r, &episodes)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(episodes) == 0 {
+		return nil, nil
+	}
+
+	if len(episodes) > 1 {
+		return nil, errors.New("Too many matches")
+	}
+
+	ep := episodes[0]
+
+	return ep, nil
+}

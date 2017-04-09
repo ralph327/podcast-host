@@ -57,8 +57,8 @@ func (s *System) LoadConfig() error {
 	dbport := s.Conf.GetString(s.Conf.GetString("Env") + "DBPort")
 	dburl := s.Conf.GetString(s.Conf.GetString("Env")+"Hostname") + ":" + dbport
 
-	s.Conf.Set("BaseURL", weburl)
-	s.Conf.Set("DBURL", dburl)
+	s.Conf.Set(s.Conf.GetString("Env")+"BaseURL", weburl)
+	s.Conf.Set(s.Conf.GetString("Env")+"DBURL", dburl)
 
 	return nil
 }
@@ -92,13 +92,17 @@ func (s *System) SetConfigDefaults() {
 	s.Conf.SetDefault("development.Hostname", "localhost")
 	s.Conf.SetDefault("development.SiteName", "Podcast Host")
 
+	// Redis
+	s.Conf.SetDefault("development.REDIS.Url", "127.0.0.1:6379")
+	s.Conf.SetDefault("development.REDIS.Secret", "secret")
+
 	// Digital Ocean
 	s.Conf.SetDefault("development.DOToken", "token")
 
 	// Minio Live
 	s.Conf.SetDefault("development.MIO_LUrl", "http://127.0.0.1:9000")
-	s.Conf.SetDefault("development.MIO_LATkn", "accesskey")
-	s.Conf.SetDefault("development.MIO_LSTkn", "secretkey")
+	s.Conf.SetDefault("development.MIO_LATkn", "8FL8REDO5FA7X3N2DRP3")
+	s.Conf.SetDefault("development.MIO_LSTkn", "/0HTxAETb+I1kpuSsCknRrU/U0Ss22ntf9VYpzol")
 
 	// Minio Archive
 	s.Conf.SetDefault("development.MIO_AUrl", "http://127.0.0.1:9000")

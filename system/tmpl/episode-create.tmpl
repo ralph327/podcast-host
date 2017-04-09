@@ -1,0 +1,13 @@
+{{define "episode-create"}}
+<P>{{.User.FirstName}}</P>
+
+<form method="POST" action="http://{{.SiteDetails.BaseURL}}/episode/upload" enctype="multipart/form-data">
+	<fieldset>
+	  <legend>Episode</legend>
+	  <h1>Create Episode</h1>
+	  <input type="file" name="episode" size="chars"> 
+	  <input type="submit" value="Submit">
+	</fieldset>
+	</form>
+{{end}}
+d

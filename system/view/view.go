@@ -21,5 +21,11 @@ func Views() (map[string]*View, error) {
 	m["Home"] = &View{Name: "Home",
 		Page: &PageView{MainHeader: "Welcome!", Title: "Home"}}
 
+	m["EpisodeCreate"] = &View{Name: "EpisodeCreate",
+		Page: &PageView{MainHeader: "Create Episode", Title: "Episode - Create"}}
+
+	m["EpisodeUpload"] = &View{Name: "EpisodeUploa",
+		Page: &PageView{MainHeader: "Upload Episode", Title: "Episode - Upload"}}
+
 	return m, nil
 }

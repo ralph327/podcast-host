@@ -14,10 +14,15 @@ type PayloadService interface {
 	GetData() map[string]interface{}
 }
 
-func New() (*Payload, error) {
+func New(conf *viper.Viper) (*Payload, error) {
 	p := new(Payload)
 
 	p.Data = make(map[string]interface{})
+
+	err := p.Init(conf)
+	if err != nil {
+		return nil, err
+	}
 
 	return p, nil
 }
@@ -44,7 +49,7 @@ func (p *Payload) Init(conf *viper.Viper) error {
 func (p *Payload) Clear() error {
 	for k := range p.Data {
 		switch k {
-		case "SiteDetails":
+		case "SiteDetails", "Logged":
 			continue
 		default:
 			delete(p.Data, k)

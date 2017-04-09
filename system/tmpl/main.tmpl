@@ -7,8 +7,14 @@
 <div class="flash-alert"></div>
 <section class="content">
 	<article class="type-system-geometric">
+	<h1 class="title">{{.View.Page.MainHeader}}</h1>
+
 	{{ if eq .View.Name "User" }}
     	{{template "user" .}}
+    {{ else if eq .View.Name "EpisodeCreate" }}
+    	{{template "episode-create" .}}
+    {{ else if eq .View.Name "EpisodeUpload" }}
+    	{{template "episode-upload" .}}
 	{{ else if eq .View.Name "Home" }}
 	    <h2>Welcome!</h2>
 	{{ end }}

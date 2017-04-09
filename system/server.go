@@ -6,7 +6,7 @@ import (
 	"codenex.us/ralph/podcast-host/system/files"
 	"codenex.us/ralph/podcast-host/system/godo"
 	"codenex.us/ralph/podcast-host/system/minio"
-	"codenex.us/ralph/podcast-host/system/payload"
+	"codenex.us/ralph/podcast-host/system/session"
 	"codenex.us/ralph/podcast-host/system/view"
 	"github.com/fvbock/endless"
 	"github.com/microcosm-cc/bluemonday"
@@ -25,11 +25,11 @@ type System struct {
 	DB         *db.ArangoDB
 	Sanitizers map[string]*bluemonday.Policy
 	Conf       *viper.Viper
-	PL         *payload.Payload
 	Views      map[string]*view.View
 	DO         *godo.GoDO
-	Minios     map[string]*minio.Minio
+	Minios     map[*minio.MinioType]*minio.Minio
 	TusC       *files.TusClient
+	Session    *session.Session
 }
 
 // Creates the system
@@ -78,34 +78,35 @@ func (s *System) SanitizeInit() {
 func (s *System) MinioInit() error {
 	var err error
 	var mc *minio.Conf
-	s.Minios = make(map[string]*minio.Minio)
+	s.Minios = make(map[*minio.MinioType]*minio.Minio)
 
 	// The Live file server
-	mc, err = minio.NewConf(s.Conf.GetString(s.Conf.GetString("Env")+"MIO_LUrl"),
+	log.Println("MINIO CONF", s.Conf.GetString(s.Conf.GetString("Env")+"MIO_LUrl"))
+	mc, err = minio.NewConf(minio.Types["livel"], s.Conf.GetString(s.Conf.GetString("Env")+"MIO_LUrl"),
 		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_LATkn"),
 		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_LSTkn"))
 	if err != nil {
 		return err
 	}
-	s.Minios["live"], err = minio.New(mc)
+	s.Minios[mc.GetType()], err = minio.New(mc)
 
 	// The Archive file server
-	mc, err = minio.NewConf(s.Conf.GetString(s.Conf.GetString("Env")+"MIO_AUrl"),
+	mc, err = minio.NewConf(minio.Types["archive"], s.Conf.GetString(s.Conf.GetString("Env")+"MIO_AUrl"),
 		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_AATkn"),
 		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_ASTkn"))
 	if err != nil {
 		return err
 	}
-	s.Minios["archive"], err = minio.New(mc)
+	s.Minios[mc.GetType()], err = minio.New(mc)
 
 	// The Backup file server
-	mc, err = minio.NewConf(s.Conf.GetString(s.Conf.GetString("Env")+"MIO_BUrl"),
+	mc, err = minio.NewConf(minio.Types["backup"], s.Conf.GetString(s.Conf.GetString("Env")+"MIO_BUrl"),
 		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_BATkn"),
 		s.Conf.GetString(s.Conf.GetString("Env")+"MIO_BSTkn"))
 	if err != nil {
 		return err
 	}
-	s.Minios["backup"], err = minio.New(mc)
+	s.Minios[mc.GetType()], err = minio.New(mc)
 
 	return nil
 }
@@ -117,8 +118,10 @@ func (s *System) init() error {
 	/* HTTP Server
 	 */
 	s.Server = gin.Default()
+	s.Server.Use(s.PayloadMaker())
 	s.Server.Use(s.ViewChecker())
 	s.Server.Use(s.PayloadClearer())
+
 	// Set templates
 	html := template.Must(template.ParseGlob("tmpl/*"))
 	s.Server.SetHTMLTemplate(html)
@@ -131,24 +134,23 @@ func (s *System) init() error {
 	 */
 	err = s.LoadConfig()
 
-	/* Payload
-	 */
-	s.PL, err = payload.New()
-	if err != nil {
-		return err
-	}
-	// Initialize the payload
-	err = s.PL.Init(s.Conf)
-	if err != nil {
-		return err
-	}
-
 	/* Sanitizers
 	 */
 	s.SanitizeInit()
 	if err != nil {
 		return err
 	}
+
+	/* Session
+	 */
+
+	s.Session, err = session.New(s.Conf.GetString(s.Conf.GetString("Env")+"REDIS.Url"),
+		[]byte(s.Conf.GetString(s.Conf.GetString("Env")+"REDIS.Secret")))
+	if err != nil {
+		return err
+	}
+	// Add session to middleware
+	s.Server.Use(s.Session.Get())
 
 	/* Database
 	 */
@@ -157,7 +159,7 @@ func (s *System) init() error {
 		return err
 	}
 	// Initialize the connection
-	err = s.DB.InitConnect(s.Conf.GetString("DBURL"),
+	err = s.DB.InitConnect(s.Conf.GetString(s.Conf.GetString("Env")+"DBURL"),
 		s.Conf.GetString(s.Conf.GetString("Env")+"DBName"),
 		s.Conf.GetString(s.Conf.GetString("Env")+"DBUser"),
 		s.Conf.GetString(s.Conf.GetString("Env")+"DBPass"))
